@@ -8,12 +8,13 @@
     <artifactId>scheduler-with-LogAndLock</artifactId>
     <groupId>com.aav</groupId>
     <version>1.0.1</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>jdbc</artifactId>
   <version>1.0.1</version>
   <name>jdbc</name>
-  <description>storage</description>
+  <description>jdbc</description>
 
   <dependencies>
     <dependency>
