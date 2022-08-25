@@ -1,6 +1,6 @@
 scheduler-LogAndLock
 ========
-[![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)]
+![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)
 
 "scheduler-LogAndLock" provides the ability to create your own schedule, keep a log of launches. It
 also allows you to block the simultaneous launch of a job on more than one host.
