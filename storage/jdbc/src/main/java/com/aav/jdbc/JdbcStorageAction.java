@@ -13,13 +13,14 @@ import lombok.NonNull;
 
 public class JdbcStorageAction extends AbstractLogAction {
 
+  private static final String SCHEMA = "public";
   private static final String LOG_TABLE = "scheduler_log";
   private static final String LOCK_TABLE = "scheduler_lock";
 
   private final DataSource dataSource;
 
   public JdbcStorageAction(@NonNull DataSource dataSource) {
-    this(dataSource, "nsi", LOG_TABLE, LOCK_TABLE);
+    this(dataSource, SCHEMA, LOG_TABLE, LOCK_TABLE);
   }
 
   public JdbcStorageAction(@NonNull DataSource dataSource, @NonNull String schema) {

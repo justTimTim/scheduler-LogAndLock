@@ -20,19 +20,9 @@ Install the project and add the following dependencies to your project.
 </dependency>
 ~~~
 
-~~~xml
+This dependency implements the work of the scheduler.
 
-<dependency>
-  <groupId>com.aav</groupId>
-  <artifactId>jdbc</artifactId>
-  <version>1.0.1</version>
-</dependency>
-~~~
-
-The first dependency contains the main logic of work, the second dependency indicates which storage
-will be used.
-
-then you need to add the "@SchedulerLogAndLock" annotation to the method that will run according to
+Then you need to add the "@SchedulerLogAndLock" annotation to the method that will run according to
 the schedule.
 
 Example
@@ -47,13 +37,14 @@ public Map<String, Object> example(ScheduleParams params){
 
     //any logic
 
-    HashMap<String, Object> map=new HashMap<>();
+    Map<String, Object> map=new HashMap<>();
     map.put("stamp",System.currentTimeMillis());
+    map.put("id",12345);
     return map;
     }
 ~~~
 
-the "SchedulerLogAndLock" annotation takes three parameters as input. <br>
+The "SchedulerLogAndLock" annotation takes three parameters as input. <br>
 of which: <br>
 cron - accepts a standard cron expression (required) <br>
 lock - enables blocking between hosts (optional) <br>
@@ -62,7 +53,65 @@ lockUntil - specifies the time to hold the lock (optional)
 "lock Until" accepts as a valid value a string like "5m" where the valid unit is s (seconds), m (
 minutes), h(hours).
 
-Then you need to create a configuration to work with.
+"ScheduleParams" returns the parameters of the last run. Contains information about the beginning
+and end of the job. And there is a map with useful data. When the job is finished, you can add any
+information you need to the map to the map when you start it again.
+
+### storage
+
+#### jdbc
+
+When working with a SQL database, you must create a table for logging the execution of a job and a
+table for locking.
+
+~~~sql
+create table public.scheduler_log
+(
+    id     uuid not null
+        constraint scheduler_log_pk
+            primary key,
+    name   varchar(255),
+    start  timestamp with time zone,
+    finish timestamp with time zone,
+    info   json
+);
+comment on table public.scheduler_log is 'job execution log';
+
+create table public.scheduler_lock
+(
+    name       varchar(60) not null
+        constraint scheduler_lock_pk
+            primary key,
+    lock_until timestamp,
+    host       varchar(60)
+);
+comment on table public.scheduler_lock is 'job lock journal';
+~~~
+
+And dependency
+
+~~~xml
+
+<dependency>
+  <groupId>com.aav</groupId>
+  <artifactId>jdbc</artifactId>
+  <version>1.0.1</version>
+</dependency>
+~~~
+
+By default, the following schema and table names are set.
+
+~~~java
+    SCHEMA="public";
+    LOG_TABLE="scheduler_log";
+    LOCK_TABLE="scheduler_lock";
+~~~
+
+But you can specify your own values through the "JdbcStorageAction" constructor when creating the
+bean.
+______________________________________
+
+Then you need to create a configuration to work with. but you can specify your own values through
 
 ~~~java
 import com.aav.jdbc.JdbcStorageAction;
@@ -91,6 +140,22 @@ public class CustomConfig {
       LockAction lockAction
   ) {
     return new SchedulerPostProcessor(threadPoolTaskScheduler, logAction, lockAction);
+  }
+~~~
+
+By default, "ThreadPoolTaskScheduler" has a value of 1. Accordingly, you must understand how many
+tasks you run at the same time, as they will be executed sequentially if you do not increase the
+number of available threads in the pool.
+
+Example
+~~~java
+  @Bean
+  public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+    ThreadPoolTaskScheduler threadPoolTaskScheduler
+        = new ThreadPoolTaskScheduler();
+    threadPoolTaskScheduler.setPoolSize(10);
+    threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
+    return threadPoolTaskScheduler;
   }
 ~~~
 
