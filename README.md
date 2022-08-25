@@ -53,9 +53,10 @@ public Map<String, Object> example(ScheduleParams params){
     }
 ~~~
 
-the "SchedulerLogAndLock" annotation takes three parameters as input. of which:
-cron - accepts a standard cron expression (required)
-lock - enables blocking between hosts (optional)
+the "SchedulerLogAndLock" annotation takes three parameters as input. <br>
+of which: <br>
+cron - accepts a standard cron expression (required) <br>
+lock - enables blocking between hosts (optional) <br>
 lockUntil - specifies the time to hold the lock (optional)
 
 "lock Until" accepts as a valid value a string like "5m" where the valid unit is s (seconds), m (
