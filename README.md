@@ -58,7 +58,7 @@ cron - accepts a standard cron expression (required)
 lock - enables blocking between hosts (optional)
 lockUntil - specifies the time to hold the lock (optional)
 
-"lock Until" accepts as a valid value a string like "5 m" where the valid unit is s (seconds), m (
+"lock Until" accepts as a valid value a string like "5m" where the valid unit is s (seconds), m (
 minutes), h(hours).
 
 Then you need to create a configuration to work with.
