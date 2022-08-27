@@ -29,25 +29,38 @@ public class LockHandler {
 
   public boolean createLockAndLog(LockParam lockParam, String methodName) {
     rowId = UUID.randomUUID();
-    if (isLockEnable && !lockAction.lock(lockParam)) {
-      // if the lock already exists, check the deadline
-      LockParam lockInfo = lockAction.getLockInfo(lockParam);
-      if (lockInfo == null) {
-        return false;
+
+    if (isLockEnable) {
+      LockParam currentLock = lockAction.getLockInfo(lockParam);
+
+      if (currentLock == null || currentLock.getName() == null) {
+        if (!lockAction.lock(lockParam)) {
+          return false;
+        }
+      } else {
+        if (currentLock.getLockUntil().isAfter(Instant.now())) {
+          if (currentLock.getHost().equals(lockParam.getHost())) {
+            if (!lockAction.updateLock(lockParam) && !lockAction.lock(lockParam)) {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        } else {
+          lockAction.unlock(lockParam);
+          if (!lockAction.lock(lockParam)) {
+            log.debug("Lock already exists!");
+            return false;
+          }
+        }
       }
-      if (lockInfo.getLockUntil().isBefore(Instant.now()) && lockAction.unlock(lockParam)
-          && !lockAction.lock(lockParam)) {
-        log.debug("Lock already exists!");
-        return false;
-      }
+
     }
+
     return logAction.create(rowId, methodName);
   }
 
-  public boolean updateCurrentRow(LockParam lockParam, Map<String, Object> info) {
-    if (isLockEnable) {
-      lockAction.unlock(lockParam);
-    }
+  public boolean updateCurrentRow(Map<String, Object> info) {
     return logAction.update(rowId, info);
   }
 

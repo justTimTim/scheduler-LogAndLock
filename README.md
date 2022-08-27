@@ -107,7 +107,7 @@ By default, the following schema and table names are set.
     LOCK_TABLE="scheduler_lock";
 ~~~
 
-But you can specify your own values through the "JdbcStorageAction" constructor when creating the
+But you can specify your own values through the "JdbcStorageClient" constructor when creating the
 bean.
 ______________________________________
 
@@ -115,6 +115,7 @@ Then you need to create a configuration to work with. but you can specify your o
 
 ~~~java
 import com.aav.jdbc.JdbcStorageAction;
+import com.aav.jdbc.JdbcStorageClient;
 import com.aav.planner.service.SchedulerPostProcessor;
 import com.aav.planner.service.lock.LockAction;
 import com.aav.planner.service.log.LogAction;
@@ -130,7 +131,7 @@ public class CustomConfig {
 
   @Bean
   public JdbcStorageAction jdbcStorageAction(DataSource dataSource) {
-    return new JdbcStorageAction(dataSource);
+    return new JdbcStorageClient(dataSource, "my_schema").init();
   }
 
   @Bean

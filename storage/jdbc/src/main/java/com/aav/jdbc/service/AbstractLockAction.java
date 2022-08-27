@@ -1,7 +1,5 @@
 package com.aav.jdbc.service;
 
-import static java.util.Objects.requireNonNull;
-
 import com.aav.planner.model.LockParam;
 import com.aav.planner.service.lock.LockAction;
 import java.sql.ResultSet;
@@ -13,10 +11,8 @@ public abstract class AbstractLockAction extends SqlExecutor implements LockActi
 
   private final String table;
 
-  protected AbstractLockAction(@NonNull String schema, @NonNull String lockTableName) {
-    requireNonNull(schema, "schema can not be null");
-    requireNonNull(lockTableName, "lockTableName can not be null");
-    this.table = schema + "." + lockTableName;
+  protected AbstractLockAction(@NonNull String schema, @NonNull String lockTable) {
+    this.table = schema + "." + lockTable;
   }
 
   @Override
@@ -32,7 +28,13 @@ public abstract class AbstractLockAction extends SqlExecutor implements LockActi
 
   @Override
   public boolean updateLock(LockParam param) {
-    return false;
+    String query = "UPDATE " + table + " SET lock_until = ? WHERE name = ? AND host = ?";
+    return executeQuery(query, statement -> {
+      statement.setTimestamp(1, Timestamp.from(param.getLockUntil()));
+      statement.setString(2, param.getName());
+      statement.setString(3, param.getHost());
+      return statement.executeUpdate() > 0;
+    }, this::updateExceptionWithOutStackTrace);
   }
 
   @Override

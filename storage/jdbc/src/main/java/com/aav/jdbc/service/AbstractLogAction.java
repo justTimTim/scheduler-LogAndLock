@@ -1,7 +1,5 @@
 package com.aav.jdbc.service;
 
-import static java.util.Objects.requireNonNull;
-
 import com.aav.planner.model.ScheduleParams;
 import com.aav.planner.service.log.LogAction;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,11 +21,8 @@ public abstract class AbstractLogAction extends AbstractLockAction implements Lo
   protected AbstractLogAction(@NonNull String schema, @NonNull String logTable,
       @NonNull String lockTable) {
     super(schema, lockTable);
-    requireNonNull(schema, "schema can not be null");
-    requireNonNull(logTable, "logTable can not be null");
     this.table = schema + "." + logTable;
 
-    objectMapper.findAndRegisterModules();
   }
 
   @Override
