@@ -70,7 +70,7 @@ create table public.scheduler_log
     id     uuid not null
         constraint scheduler_log_pk
             primary key,
-    name   varchar(255),
+    name   varchar(100),
     start  timestamp with time zone,
     finish timestamp with time zone,
     info   json
@@ -79,11 +79,11 @@ comment on table public.scheduler_log is 'job execution log';
 
 create table public.scheduler_lock
 (
-    name       varchar(60) not null
+    name       varchar(100) not null
         constraint scheduler_lock_pk
             primary key,
     lock_until timestamp,
-    host       varchar(60)
+    host       varchar(100)
 );
 comment on table public.scheduler_lock is 'job lock journal';
 ~~~
@@ -120,10 +120,8 @@ import com.aav.planner.service.SchedulerPostProcessor;
 import com.aav.planner.service.lock.LockAction;
 import com.aav.planner.service.log.LogAction;
 import javax.sql.DataSource;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
@@ -142,6 +140,7 @@ public class CustomConfig {
   ) {
     return new SchedulerPostProcessor(threadPoolTaskScheduler, logAction, lockAction);
   }
+}
 ~~~
 
 By default, "ThreadPoolTaskScheduler" has a value of 1. Accordingly, you must understand how many

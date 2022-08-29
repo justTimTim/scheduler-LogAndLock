@@ -48,7 +48,8 @@ public class Task {
   }
 
   private String createUniqueName(Object bean, Method method) {
-    return bean.getClass().getName() + "." + method.getName();
+    String name = bean.getClass().getName() + "." + method.getName();
+    return name.substring(name.length() - Math.min(name.length(), 100));
   }
 
 
