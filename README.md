@@ -111,7 +111,7 @@ But you can specify your own values through the "JdbcStorageClient" constructor 
 bean.
 ______________________________________
 
-Then you need to create a configuration to work with. but you can specify your own values through
+Then you need to create a configuration to work with.
 
 ~~~java
 import com.aav.jdbc.JdbcStorageAction;
