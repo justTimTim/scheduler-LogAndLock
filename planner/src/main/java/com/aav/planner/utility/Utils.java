@@ -12,7 +12,8 @@ public class Utils {
 
   private static String initHostname() {
     try {
-      return InetAddress.getLocalHost().getHostName();
+      String host = InetAddress.getLocalHost().getHostName();
+      return host.substring(host.length() - Math.min(host.length(), 100));
     } catch (UnknownHostException e) {
       return "unknown";
     }
