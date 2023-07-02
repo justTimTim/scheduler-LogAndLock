@@ -48,7 +48,7 @@ The "SchedulerLogAndLock" annotation takes three parameters as input. <br>
 of which: <br>
 cron - accepts a standard cron expression (required) <br>
 lock - enables locking between hosts (optional) <br>
-lockUntil - specifies the time to hold the lock (optional)
+lockUntil - specifies the time to hold the lock (optional)<br>
 replace - overwrite last entry for running method (optional)
 
 cron can also accept the "-" parameter, in which case the schedule will not be created.
