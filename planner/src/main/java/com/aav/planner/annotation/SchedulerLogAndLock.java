@@ -22,6 +22,12 @@ public @interface SchedulerLogAndLock {
   boolean lock() default false;
 
   /**
+   * Sets logging to overwrite mode. If there are already logs for the method, then the last line
+   * will be overwritten, if not, a new line will be created that will be overwritten.
+   */
+  boolean replace() default false;
+
+  /**
    * the time for which the lock is guaranteed to be held
    */
   String lockUntil() default "0m";

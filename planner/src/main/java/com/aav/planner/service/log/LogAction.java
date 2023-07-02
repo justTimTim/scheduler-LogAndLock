@@ -2,6 +2,7 @@ package com.aav.planner.service.log;
 
 import com.aav.planner.model.ScheduleParams;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -33,5 +34,13 @@ public interface LogAction {
    */
   ScheduleParams getLastRow(String name);
 
+  /**
+   * Tries to find the last entry with the specified name and replace the values in it, if the entry
+   * with the same name does not exist, then tries to create a new one.
+   *
+   * @param name method name
+   * @return row id
+   */
+  Optional<UUID> replace(String name);
 
 }

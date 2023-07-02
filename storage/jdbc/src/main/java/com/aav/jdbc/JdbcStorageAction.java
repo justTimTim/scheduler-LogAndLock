@@ -19,7 +19,7 @@ public class JdbcStorageAction extends AbstractLogAction {
   private final DataSource dataSource;
 
   public JdbcStorageAction(@NonNull DataSource dataSource) {
-    this(dataSource, "nsi", LOG_TABLE, LOCK_TABLE);
+    this(dataSource, "public", LOG_TABLE, LOCK_TABLE);
   }
 
   public JdbcStorageAction(@NonNull DataSource dataSource, @NonNull String schema) {

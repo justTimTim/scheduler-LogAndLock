@@ -7,12 +7,12 @@
   <parent>
     <artifactId>scheduler-with-LogAndLock</artifactId>
     <groupId>com.aav</groupId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>jdbc</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <name>jdbc</name>
   <description>jdbc</description>
 
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.aav</groupId>
       <artifactId>planner</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

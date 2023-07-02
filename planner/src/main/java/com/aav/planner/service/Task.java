@@ -15,11 +15,12 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
 @RequiredArgsConstructor
-public class Task {
+class Task {
 
   public void init(Method method, ThreadPoolTaskScheduler taskScheduler, Object bean,
       LogAction logAction, LockAction lockAction) {
@@ -35,29 +36,23 @@ public class Task {
       return;
     }
 
-    CronTrigger cronTrigger = new CronTrigger(cron);
-    final LockParam lockParam = createLockParam(bean, method);
+    Trigger cronTrigger = new CronTrigger(cron);
     final String uniqueName = createUniqueName(bean, method);
     final boolean ifLockEnabled = method.getAnnotation(SchedulerLogAndLock.class).lock();
+    final boolean ifReplaceLog = method.getAnnotation(SchedulerLogAndLock.class).replace();
+    String lockUntil = method.getAnnotation(SchedulerLogAndLock.class).lockUntil();
 
     taskScheduler.schedule(
-        new TaskBody(logAction, lockAction, bean, method, ifLockEnabled, lockParam, uniqueName),
-        cronTrigger);
+        new TaskBody(logAction, lockAction, bean, method, ifLockEnabled, ifReplaceLog, uniqueName,
+            lockUntil), cronTrigger);
 
   }
 
   private String createUniqueName(Object bean, Method method) {
-    return bean.getClass().getName() + "." + method.getName();
+    String name = bean.getClass().getName() + "." + method.getName();
+    return name.substring(name.length() - Math.min(name.length(), 100));
   }
 
-  private LockParam createLockParam(Object bean, Method method) {
-    String lockUntil = method.getAnnotation(SchedulerLogAndLock.class).lockUntil();
-
-    return new LockParam(
-        createUniqueName(bean, method),
-        Instant.now().plus(getDuration(lockUntil)),
-        HOST_NAME);
-  }
 
   private String getCron(Method method) {
     String cron = method.getAnnotation(SchedulerLogAndLock.class).cron();
@@ -73,37 +68,42 @@ public class Task {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final boolean ifLockEnabled;
     private final LogAction logAction;
-    private final LockAction lockAction;
     private final Object bean;
     private final Method method;
-    private final LockParam lockParam;
     private final String name;
+    private final LockHandler lockHandler;
+    private final String lockUntil;
 
-    public TaskBody(LogAction logAction, LockAction lockAction, Object bean,
-        Method method, boolean ifLockEnabled, LockParam lockParam, String name) {
+    public TaskBody(LogAction logAction, LockAction lockAction, Object bean, Method method,
+        boolean ifLockEnabled, boolean ifReplaceLog, String name, String lockUntil) {
       this.logAction = logAction;
-      this.lockAction = lockAction;
       this.bean = bean;
       this.method = method;
-      this.lockParam = lockParam;
       this.name = name;
-      this.ifLockEnabled = ifLockEnabled;
+      this.lockUntil = lockUntil;
+      this.lockHandler = new LockHandler(ifLockEnabled, ifReplaceLog, logAction, lockAction);
+    }
+
+    private LockParam createLockParam() {
+      return new LockParam(
+          name,
+          Instant.now().plus(getDuration(lockUntil)),
+          HOST_NAME);
     }
 
     @Override
     public void run() {
-      final LockHandler lockHandler = new LockHandler(ifLockEnabled, logAction, lockAction);
+      LockParam lockParam = createLockParam();
       try {
         boolean lockAndLog = lockHandler.createLockAndLog(lockParam, name);
         ScheduleParams lastParams = logAction.getLastRow(name);
-        Map<String, Object> mapToSave = null;
+        Map<String, Object> mapToSave;
         if (lockAndLog) {
           try {
             mapToSave = (Map<String, Object>) method.invoke(bean, lastParams);
 
-            if (lockHandler.updateCurrentRow(lockParam, mapToSave)) {
+            if (lockHandler.updateCurrentRow(mapToSave)) {
               log.debug("Job {} successfully completed", name);
             }
           } catch (Exception e) {
@@ -116,3 +116,4 @@ public class Task {
     }
   }
 }
+
