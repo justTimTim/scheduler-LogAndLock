@@ -17,7 +17,7 @@ Install the project and add the following dependencies to your project.
 <dependency>
   <groupId>com.aav</groupId>
   <artifactId>planner</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
 </dependency>
 ~~~
 
@@ -53,6 +53,7 @@ replace - overwrite last entry for running method (optional)
 
 cron can also accept the "-" parameter, in which case the schedule will not be created.
 If you pass parameters through application.yml you can disable your job at any time.
+cron = "${app.scheduler.test}" - an example of passing cron expressions through application file
 "lockUntil" accepts as a valid value a string like "5m", where the valid unit is s (seconds), m (
 minutes), h(hours).
 
@@ -123,6 +124,7 @@ import com.aav.planner.service.log.LogAction;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
@@ -138,9 +140,10 @@ public class CustomConfig {
   public SchedulerPostProcessor postProcessor(
       ThreadPoolTaskScheduler threadPoolTaskScheduler,
       LogAction logAction,
-      LockAction lockAction
+      LockAction lockAction,
+      Environment env
   ) {
-    return new SchedulerPostProcessor(threadPoolTaskScheduler, logAction, lockAction);
+    return new SchedulerPostProcessor(threadPoolTaskScheduler, logAction, lockAction, env);
   }
 }
 ~~~

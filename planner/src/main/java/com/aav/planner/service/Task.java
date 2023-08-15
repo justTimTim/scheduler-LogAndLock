@@ -15,6 +15,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
@@ -23,7 +24,7 @@ import org.springframework.scheduling.support.CronTrigger;
 class Task {
 
   public void init(Method method, ThreadPoolTaskScheduler taskScheduler, Object bean,
-      LogAction logAction, LockAction lockAction) {
+      LogAction logAction, LockAction lockAction, Environment env) {
 
     final Class<?> returnType = method.getReturnType();
 
@@ -34,13 +35,25 @@ class Task {
     String cron = getCron(method);
     if (cron.equals("-")) {
       return;
+    } else if (cron.startsWith("$")) {
+      if (env == null) {
+        throw new SchedulerLogAndLockException(
+            "Need to pass Environment to the constructor SchedulerPostProcessor");
+      }
+      var property = env.getProperty(cron.substring(2, cron.length() - 1));
+      if (property == null) {
+        throw new SchedulerLogAndLockException(
+            String.format("Parameter '%s' not found in app config", cron));
+      }
+      cron = property;
     }
 
+
     Trigger cronTrigger = new CronTrigger(cron);
-    final String uniqueName = createUniqueName(bean, method);
-    final boolean ifLockEnabled = method.getAnnotation(SchedulerLogAndLock.class).lock();
-    final boolean ifReplaceLog = method.getAnnotation(SchedulerLogAndLock.class).replace();
-    String lockUntil = method.getAnnotation(SchedulerLogAndLock.class).lockUntil();
+    var uniqueName = createUniqueName(bean, method);
+    var ifLockEnabled = method.getAnnotation(SchedulerLogAndLock.class).lock();
+    var ifReplaceLog = method.getAnnotation(SchedulerLogAndLock.class).replace();
+    var lockUntil = method.getAnnotation(SchedulerLogAndLock.class).lockUntil();
 
     taskScheduler.schedule(
         new TaskBody(logAction, lockAction, bean, method, ifLockEnabled, ifReplaceLog, uniqueName,
@@ -57,7 +70,7 @@ class Task {
   private String getCron(Method method) {
     String cron = method.getAnnotation(SchedulerLogAndLock.class).cron();
     String[] s = cron.split(" ");
-    if (s.length != 6 && !cron.equals("-")) {
+    if (s.length != 6 && !cron.equals("-") && !cron.startsWith("$")) {
       throw new SchedulerLogAndLockException("Invalid cron expression");
     }
     return cron;
