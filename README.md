@@ -2,9 +2,12 @@ scheduler-LogAndLock
 ========
 ![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)
 
-"scheduler-LogAndLock" provides the ability to create a schedule to run your tasks and keep a log
-launches with the subsequent transfer of the saved parameters to the method.
-Also allows you to block the simultaneous execution of a job on more than one host.
+"scheduler-LogAndLock" provides the following capabilities:
+- create a schedule for running methods
+- pass parameters to these methods
+- save execution results
+- keep a log of launches
+- block simultaneous execution of a task on more than one application instance.
 <br>
 At the moment, only SQL databases are implemented as storage.
 
